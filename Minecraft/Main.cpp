@@ -26,13 +26,20 @@ void main() {
 GLuint CreateShader(const GLchar *shaderSource, GLenum shaderType) { 
     const GLuint shaderId = glCreateShader(shaderType); 
     if(!shaderId) { 
+        std::cerr << "Error creating shader! (shaderId do not exists)" << std::endl;
         return 0;   // null handle 
     } 
      
     glShaderSource(shaderId, 1, &shaderSource, nullptr); 
-glCompileShader(shaderId); 
+    glCompileShader(shaderId); 
      
     // error handling 
+    GLint success;
+    glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        std::cerr << "Shader compilation failed" << std::endl;
+        return 0;
+    }
      
     return shaderId; 
 }
@@ -42,6 +49,7 @@ GLuint CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint geometry
 { 
     const GLuint programId = glCreateProgram(); 
     if(!programId) { 
+        std::cerr << "Error creating shader program " << std::endl;
         return 0;   // null handle 
     } 
      
@@ -80,14 +88,12 @@ std::pair<GLuint, GLuint> CreateVertexBufferObject() {
 }
 
 int main() {
-    // SFML window settings
     sf::ContextSettings contextSettings;
     contextSettings.depthBits = 24;
     contextSettings.sRgbCapable = false;
     contextSettings.majorVersion = 3;
     contextSettings.minorVersion = 3;
 
-    // Create window
     sf::Window window(sf::VideoMode(800, 600), "OpenGL", sf::Style::Default, contextSettings);
     window.setActive(true);
 
