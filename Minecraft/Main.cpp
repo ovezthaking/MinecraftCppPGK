@@ -1,38 +1,44 @@
-#include <SFML/Window.hpp>
+#include <SFML/Graphics.hpp>
 #include <GLAD/glad.h>
 #include <iostream>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <Cube.h>
+#include <ShaderProgram.h>
+#include <Camera.h>
 
 
 
-// Vertex shader
-const char* vertexShaderSource = R"(
-#version 330 core
-layout (location = 0) in vec3 position;
-void main() {
-    gl_Position = vec4(position.x, position.y, position.z, 1.0);
+// Linkowanie programu
+GLuint CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint geometryShader = 0)
+{
+    const GLuint programId = glCreateProgram();
+    if (!programId) {
+        std::cerr << "Error creating shader program " << std::endl;
+        return 0;   // null handle 
+    }
+
+    glAttachShader(programId, vertexShader);
+    glAttachShader(programId, fragmentShader);
+    if (geometryShader) glAttachShader(programId, geometryShader);
+
+    glLinkProgram(programId);
+
+    return programId;
 }
-)";
-
-// Fragment shader
-const char* fragmentShaderSource = R"(
-#version 330 core
-out vec4 fragmentColor;
-void main() {
-    fragmentColor = vec4(1.0, 0.5, 0.2, 1.0);
-}
-)";
 
 // Kompilacja shaderów
-GLuint CreateShader(const GLchar *shaderSource, GLenum shaderType) { 
-    const GLuint shaderId = glCreateShader(shaderType); 
-    if(!shaderId) { 
+GLuint CreateShader(const GLchar* shaderSource, GLenum shaderType) {
+    const GLuint shaderId = glCreateShader(shaderType);
+    if (!shaderId) {
         std::cerr << "Error creating shader! (shaderId do not exists)" << std::endl;
         return 0;   // null handle 
-    } 
-     
-    glShaderSource(shaderId, 1, &shaderSource, nullptr); 
-    glCompileShader(shaderId); 
-     
+    }
+
+    glShaderSource(shaderId, 1, &shaderSource, nullptr);
+    glCompileShader(shaderId);
+
     // error handling 
     GLint success;
     glGetShaderiv(shaderId, GL_COMPILE_STATUS, &success);
@@ -40,102 +46,115 @@ GLuint CreateShader(const GLchar *shaderSource, GLenum shaderType) {
         std::cerr << "Shader compilation failed" << std::endl;
         return 0;
     }
-     
-    return shaderId; 
+
+    return shaderId;
 }
 
-// Linkowanie programu
-GLuint CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint geometryShader = 0) 
-{ 
-    const GLuint programId = glCreateProgram(); 
-    if(!programId) { 
-        std::cerr << "Error creating shader program " << std::endl;
-        return 0;   // null handle 
-    } 
-     
-    glAttachShader(programId, vertexShader); 
-    glAttachShader(programId, fragmentShader); 
-    if(geometryShader) glAttachShader(programId, geometryShader); 
-     
-    glLinkProgram(programId); 
-     
-    return programId; 
-}
+// Tworzenie tekstury
+GLuint CreateTexture(const std::string& path) {
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
-// Vertex Buffer Object
-std::pair<GLuint, GLuint> CreateVertexBufferObject() {
-    const float triangle[] = {
-        //  x      y      z 
-       -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f,  0.5f, 0.0f
-    };
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-    GLuint vbo, vao;
-    glGenBuffers(1, &vbo);
-    glGenVertexArrays(1, &vao);
-    glBindVertexArray(vao);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(triangle), triangle, GL_STATIC_DRAW);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
+    sf::Image image;
+    if (image.loadFromFile(path)) {
+        image.flipVertically();
+        const sf::Vector2u size = image.getSize();
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.x, size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.getPixelsPtr());
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else {
+        std::cerr << "Failed to load texture: " << path << std::endl;
+    }
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
-
-    return std::make_pair(vbo, vao);
+    return texture;
 }
 
 int main() {
     sf::ContextSettings contextSettings;
     contextSettings.depthBits = 24;
-    contextSettings.sRgbCapable = false;
     contextSettings.majorVersion = 3;
     contextSettings.minorVersion = 3;
 
-    sf::Window window(sf::VideoMode(800, 600), "OpenGL", sf::Style::Default, contextSettings);
+    sf::Window window(sf::VideoMode(800, 600), "OpenGL Cube", sf::Style::Default, contextSettings);
     window.setActive(true);
 
-    gladLoadGL();
-    glViewport(0, 0, static_cast<GLsizei>(window.getSize().x), static_cast<GLsizei>(window.getSize().y));
+    // Inicjalizacja OpenGL przez GLAD
+    if (!gladLoadGL()) {
+        std::cerr << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
 
-    // Create shaders
-    GLuint vertexShaderId = CreateShader(vertexShaderSource, GL_VERTEX_SHADER);
-    GLuint fragmentShaderId = CreateShader(fragmentShaderSource, GL_FRAGMENT_SHADER);
-    // Link shaders 
-    GLuint programId = CreateProgram(vertexShaderId, fragmentShaderId);
-    // Create vbo & vao 
-    auto [vbo, vao] = CreateVertexBufferObject();
+    // Ustawienia OpenGL
+    glEnable(GL_DEPTH_TEST);
 
-    bool running = 1;
-    while (running) {
-        //Events
+    // Tworzenie shaderów
+    ShaderProgram shaderProgram("shaders/vertexShader.glsl", "shaders/fragmentShader.glsl");
+
+    // Tworzenie kamery
+    glm::vec3 initialPosition(0.0f, 0.0f, 3.0f);
+    glm::vec3 initialFront(0.0f, 0.0f, -1.0f);
+    float initialYaw = -90.0f;
+    float initialPitch = 0.0f;
+    Camera camera(initialPosition, initialFront, initialYaw, initialPitch);
+
+    // Tworzenie tekstury
+    GLuint grassTexture = CreateTexture("assets/blocks/grass_debug.jpg");
+
+    // Tworzenie obiektu Cube
+    Cube cube("assets/blocks/grass_debug.jpg");
+
+    // Pêtla renderuj¹ca
+    sf::Clock clock;
+    sf::Vector2i lastMousePosition = sf::Mouse::getPosition(window);
+    while (window.isOpen()) {
+        float dt = clock.restart().asSeconds();
+
+        // Obs³uga zdarzeñ
         sf::Event event;
         while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                running = false;
-            }
+            if (event.type == sf::Event::Closed)
+                window.close();
+            else if (event.type == sf::Event::Resized)
+                glViewport(0, 0, event.size.width, event.size.height);
         }
 
+        // Obs³uga klawiatury
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) camera.MoveForward(dt);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) camera.MoveBackward(dt);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) camera.MoveLeft(dt);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) camera.MoveRight(dt);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q)) camera.MoveUp(dt);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::E)) camera.MoveDown(dt);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) window.close(); //Escape do zamkniêcia
+
+        // Obs³uga myszy
+        sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
+        sf::Vector2i mouseDelta = mousePosition - lastMousePosition;
+        camera.Rotate(mouseDelta);
+        lastMousePosition = mousePosition;
+
+        // Czyszczenie ekranu
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glUseProgram(programId);
-        glBindVertexArray(vao);
+        // Ustawienie shaderów i macierzy
+        shaderProgram.Use();
+        glm::mat4 mvp = camera.GetProjection() * camera.GetLookAt();
+        glUniformMatrix4fv(shaderProgram.GetUniformLocation("mvp"), 1, GL_FALSE, glm::value_ptr(mvp));
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        // Renderowanie szeœcianu
+        cube.Render();
 
+        // Wyœwietlanie okna
         window.display();
     }
 
-    // Clean-up
-    glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &vbo);
-    glDeleteProgram(programId);
-    glDeleteShader(vertexShaderId);
-    glDeleteShader(fragmentShaderId);
-
-    window.close();
     return 0;
 }
