@@ -33,6 +33,12 @@
     <ClCompile Include="src\ShaderProgram.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
+    <ClCompile Include="src\PerlinNoise.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\CubePalette.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="main_test.txt">
@@ -47,6 +53,15 @@
       <Filter>Pliki źródłowe</Filter>
     </ClInclude>
     <ClInclude Include="src\ShaderProgram.h">
+      <Filter>Pliki źródłowe</Filter>
+    </ClInclude>
+    <ClInclude Include="src\CubePalette.h">
+      <Filter>Pliki źródłowe</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PerlinNoise.h">
+      <Filter>Pliki źródłowe</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Chunk.h">
       <Filter>Pliki źródłowe</Filter>
     </ClInclude>
   </ItemGroup>

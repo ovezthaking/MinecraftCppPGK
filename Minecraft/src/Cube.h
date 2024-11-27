@@ -6,6 +6,13 @@
 
 class Cube {
 public:
+
+	enum class Type {
+		None,
+		Grass,
+		Stone
+	};
+
 	Cube(const std::string& texturePath);
 
 	Cube() = delete;
