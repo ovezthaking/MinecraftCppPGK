@@ -7,6 +7,7 @@
 class ShaderProgram {
 public:
 	ShaderProgram(const std::string& vertexSource, const std::string& fragmentSource);
+
 	ShaderProgram();
 	ShaderProgram(const ShaderProgram&) = delete;
 	ShaderProgram& operator=(const ShaderProgram&) = delete;
@@ -21,6 +22,8 @@ public:
 	void SetMat4(const std::string_view name, const glm::mat4& value);
 
 	GLint GetUniformLocation(const std::string& name) const;
+
+	void setUniform(const std::string& name, const glm::mat4& matrix);
 
 private:
 	GLuint m_programId;

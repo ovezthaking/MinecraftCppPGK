@@ -1,5 +1,7 @@
 #include "PerlinNoise.h"
 #include <algorithm>
+#include <random>
+#include <numeric>
 
 namespace {
 	constexpr std::array<uint8_t, 256> s_permutations = {
@@ -36,7 +38,10 @@ PerlinNoise::PerlinNoise() {
 }
 
 PerlinNoise::PerlinNoise(float seed) {
-    //...
+	std::iota(m_permutations.begin(), m_permutations.end(), 0);
+	std::shuffle(m_permutations.begin(), m_permutations.end(), std::default_random_engine(static_cast<std::uint32_t>(seed)));
+	std::copy(m_permutations.begin(), m_permutations.end(), m_permutations.begin() + 256);
+
 }
 
 float PerlinNoise::At(const glm::vec3& coords) const {

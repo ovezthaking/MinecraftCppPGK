@@ -5,27 +5,32 @@
 
 
 std::string ShaderProgram::s_fragmentShaderSource = R"(
-#version 330 core 
-out vec4 FragColor; 
-in vec2 outTexCoords; 
-uniform sampler2D texture1; 
-void main() { 
-    FragColor = texture(texture1, outTexCoords); 
-} 
-)";
+    #version 330 core
+    out vec4 FragColor;
+
+    in vec2 TexCoord;
+
+    uniform sampler2D texture1;
+
+    void main() {
+        FragColor = texture(texture1, TexCoord);
+    })";
+
 std::string ShaderProgram::s_vertexShaderSource = R"(
-#version 330 core
-layout (location = 0) in vec3 inPosition;
-layout (location = 1) in vec2 inTexCoords;
+    #version 330 core
+    layout (location = 0) in vec3 aPos;
+    layout (location = 1) in vec2 aTexCoord;
 
-out vec2 outTexCoords;
-uniform mat4 mvp;
+    out vec2 TexCoord;
 
-void main() {
-    gl_Position = mvp * vec4(inPosition, 1.0);
-    outTexCoords = inTexCoords;
-}
-)";
+    uniform mat4 model;
+    uniform mat4 view;
+    uniform mat4 projection;
+
+    void main() {
+        gl_Position = projection * view * model *vec4(aPos, 1.0);
+        TexCoord = aTexCoord;
+    })";
 
 
 extern GLuint CreateShader(const GLchar* shaderSource, GLenum shaderType); // Deklaracja funkcji, ¿eby mo¿na by³o jej u¿yæ
@@ -114,4 +119,16 @@ void ShaderProgram::SetMat4(const std::string_view name, const glm::mat4& value)
 
 GLint ShaderProgram::GetUniformLocation(const std::string& name) const {
     return glGetUniformLocation(m_programId, name.c_str());
+}
+
+void ShaderProgram::setUniform(const std::string& name,
+    const glm::mat4& matrix) {
+    GLint location = glGetUniformLocation(m_programId, name.c_str());
+    if (location != -1) {
+        glUniformMatrix4fv(location, 1, GL_FALSE, &matrix[0][0]);
+    }
+    else {
+        std::cerr << "Uniform '" << name << "' not found in shader program!"
+            << std::endl;
+    }
 }

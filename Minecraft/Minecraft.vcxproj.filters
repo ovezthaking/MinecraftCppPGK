@@ -39,6 +39,12 @@
     <ClCompile Include="src\CubePalette.cpp">
       <Filter>Pliki źródłowe</Filter>
     </ClCompile>
+    <ClCompile Include="src\AABB.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Ray.cpp">
+      <Filter>Pliki źródłowe</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Text Include="main_test.txt">
@@ -61,8 +67,28 @@
     <ClInclude Include="src\PerlinNoise.h">
       <Filter>Pliki źródłowe</Filter>
     </ClInclude>
+    <ClInclude Include="src\Chunk.old.h">
+      <Filter>Pliki źródłowe</Filter>
+    </ClInclude>
     <ClInclude Include="src\Chunk.h">
       <Filter>Pliki źródłowe</Filter>
     </ClInclude>
+    <ClInclude Include="src\AABB.h">
+      <Filter>Pliki źródłowe</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Ray.h">
+      <Filter>Pliki źródłowe</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="assets\blocks\grass.jpg">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
+    <Image Include="assets\blocks\grass_debug.jpg">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
+    <Image Include="assets\blocks\stone.jpg">
+      <Filter>Pliki zasobów</Filter>
+    </Image>
   </ItemGroup>
 </Project>

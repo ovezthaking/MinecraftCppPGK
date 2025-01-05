@@ -10,7 +10,8 @@ public:
 	enum class Type {
 		None,
 		Grass,
-		Stone
+		Stone,
+		GrassDebug
 	};
 
 	Cube(const std::string& texturePath);
@@ -26,7 +27,7 @@ public:
 	GLuint Vao() const { return m_vao; }
 	GLuint Texture() const { return m_texture; }
 
-	void Render();
+	void Draw() const;
 
 private:
 	GLuint m_vbo{ 0 };

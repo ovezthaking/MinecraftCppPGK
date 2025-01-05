@@ -84,6 +84,7 @@ Cube::~Cube() {
 	if (m_vao) glDeleteVertexArrays(1, &m_vao);
 }
 
+
 Cube::Cube(Cube&& rhs) noexcept
 	: m_vbo(std::exchange(rhs.m_vbo, 0))
 	, m_vao(std::exchange(rhs.m_vao, 0))
@@ -102,8 +103,9 @@ Cube& Cube::operator=(Cube&& rhs) noexcept {
 	return *this;
 }
 
-void Cube::Render() {
+void Cube::Draw() const {
 	glBindVertexArray(m_vao); // Przypisanie VAO szeœcianu
 	glBindTexture(GL_TEXTURE_2D, m_texture); // Przypisanie tekstury
 	glDrawArrays(GL_TRIANGLES, 0, 36); // Rysowanie szeœcianu
+
 }

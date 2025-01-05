@@ -144,11 +144,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="src\AABB.cpp" />
     <ClCompile Include="src\Camera.cpp" />
     <ClCompile Include="src\Cube.cpp" />
     <ClCompile Include="src\CubePalette.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\PerlinNoise.cpp" />
+    <ClCompile Include="src\Ray.cpp" />
     <ClCompile Include="src\ShaderProgram.cpp" />
     <ClCompile Include="test.cpp" />
   </ItemGroup>
@@ -156,12 +158,20 @@
     <Text Include="main_test.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\AABB.h" />
     <ClInclude Include="src\Camera.h" />
     <ClInclude Include="src\Chunk.h" />
+    <ClInclude Include="src\Chunk.old.h" />
     <ClInclude Include="src\Cube.h" />
     <ClInclude Include="src\CubePalette.h" />
     <ClInclude Include="src\PerlinNoise.h" />
+    <ClInclude Include="src\Ray.h" />
     <ClInclude Include="src\ShaderProgram.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="assets\blocks\grass.jpg" />
+    <Image Include="assets\blocks\grass_debug.jpg" />
+    <Image Include="assets\blocks\stone.jpg" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
