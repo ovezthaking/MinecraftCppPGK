@@ -93,7 +93,7 @@ int main() {
 
 
 
-    sf::Window window(sf::VideoMode(800, 600), "OpenGL Chunk", sf::Style::Default, contextSettings);
+    sf::Window window(sf::VideoMode(1000, 800), "OpenGL Chunk", sf::Style::Default, contextSettings);
     window.setActive(true);
     window.setMouseCursorGrabbed(true);
     window.setMouseCursorVisible(false);
@@ -158,6 +158,7 @@ int main() {
     sf::Vector2i lastMousePosition = sf::Mouse::getPosition(window);
 
 	
+    bool isMousePressed = false; // Zmienna stanu klikniêcia
 
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
@@ -169,31 +170,31 @@ int main() {
                 window.close();
             else if (event.type == sf::Event::Resized)
                 glViewport(0, 0, event.size.width, event.size.height);
-        }
 
+            // Sprawdzenie klikniêcia myszy
+            if (event.type == sf::Event::MouseButtonPressed && !isMousePressed) {
+                isMousePressed = true; // Rejestruj, ¿e przycisk zosta³ wciœniêty
 
+                Ray ray(camera.GetPosition(), camera.GetFront());
+                Ray::HitType hitType = chunk.Hit(ray, 0.0f, 3.0f, hitRecord);
 
-
-        if (event.type == sf::Event::MouseButtonPressed) {
-            Ray ray(camera.GetPosition(), camera.GetFront());
-            Ray::HitType hitType = chunk.Hit(ray, 0.0f, 3.0f, hitRecord); // Ustaw max na wiêksz¹ wartoœæ
-
-            if (hitType == Ray::HitType::Hit) {
-                std::cout << "Hit at: " << hitRecord.m_cubeIndex.x << ", "
-                    << hitRecord.m_cubeIndex.y << ", "
-                    << hitRecord.m_cubeIndex.z << std::endl;
-
-                if (event.mouseButton.button == sf::Mouse::Left) {
-                    chunk.RemoveBlock(hitRecord.m_cubeIndex.x,
-                        hitRecord.m_cubeIndex.y,
-                        hitRecord.m_cubeIndex.z);
+                if (hitType == Ray::HitType::Hit) {
+                    if (event.mouseButton.button == sf::Mouse::Left) {
+                        chunk.RemoveBlock(hitRecord.m_cubeIndex.x,
+                            hitRecord.m_cubeIndex.y,
+                            hitRecord.m_cubeIndex.z);
+                    }
+                    else if (event.mouseButton.button == sf::Mouse::Right) {
+                        chunk.PlaceBlock(hitRecord.m_neighbourIndex.x,
+                            hitRecord.m_neighbourIndex.y,
+                            hitRecord.m_neighbourIndex.z,
+                            Cube::Type::Grass);
+                    }
                 }
-                else if (event.mouseButton.button == sf::Mouse::Right) {
-                    chunk.PlaceBlock(hitRecord.m_neighbourIndex.x,
-                        hitRecord.m_neighbourIndex.y,
-                        hitRecord.m_neighbourIndex.z,
-                        Cube::Type::Grass);
-                }
+            }
+
+            if (event.type == sf::Event::MouseButtonReleased) {
+                isMousePressed = false; // Przywrócenie stanu klikniêcia
             }
         }
 
