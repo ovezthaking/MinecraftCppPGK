@@ -79,6 +79,9 @@ GLuint CreateTexture(const std::string& path) {
 }
 
 
+
+
+
 int main() {
 
     sf::ContextSettings contextSettings;
@@ -154,6 +157,7 @@ int main() {
     sf::Vector2i windowCenter(window.getSize().x / 2, window.getSize().y / 2);
     sf::Vector2i lastMousePosition = sf::Mouse::getPosition(window);
 
+	
 
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
@@ -167,15 +171,47 @@ int main() {
                 glViewport(0, 0, event.size.width, event.size.height);
         }
 
+
+
+
+        if (event.type == sf::Event::MouseButtonPressed) {
+            Ray ray(camera.GetPosition(), camera.GetFront());
+            Ray::HitType hitType = chunk.Hit(ray, 0.0f, 3.0f, hitRecord); // Ustaw max na wiêksz¹ wartoœæ
+
+            if (hitType == Ray::HitType::Hit) {
+                std::cout << "Hit at: " << hitRecord.m_cubeIndex.x << ", "
+                    << hitRecord.m_cubeIndex.y << ", "
+                    << hitRecord.m_cubeIndex.z << std::endl;
+
+                if (event.mouseButton.button == sf::Mouse::Left) {
+                    chunk.RemoveBlock(hitRecord.m_cubeIndex.x,
+                        hitRecord.m_cubeIndex.y,
+                        hitRecord.m_cubeIndex.z);
+                }
+                else if (event.mouseButton.button == sf::Mouse::Right) {
+                    chunk.PlaceBlock(hitRecord.m_neighbourIndex.x,
+                        hitRecord.m_neighbourIndex.y,
+                        hitRecord.m_neighbourIndex.z,
+                        Cube::Type::Grass);
+                }
+            }
+        }
+
+
+
+
 		float movementSpeed = 0.025f;
         // Obs³uga klawiatury
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) camera.MoveForward(dt + movementSpeed);
+        if ((sf::Keyboard::isKeyPressed(sf::Keyboard::W)) && (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl))) camera.MoveForward(dt + movementSpeed);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) camera.MoveBackward(dt + movementSpeed);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) camera.MoveLeft(dt + movementSpeed);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) camera.MoveRight(dt + movementSpeed);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) camera.MoveUp(dt + movementSpeed);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) camera.MoveDown(dt + movementSpeed);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) window.close(); //Escape do zamkniêcia
+        //if (sf::Mouse::isButtonPressed(sf::Mouse::Left));
+        
 
         // Obs³uga myszy
         sf::Vector2i mousePosition = sf::Mouse::getPosition(window);

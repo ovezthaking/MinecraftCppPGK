@@ -1,4 +1,3 @@
 ﻿  Main.cpp
-C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\Main.cpp(127,52): warning C4101: "hitRecord": lokalna zmienna, do której nie istnieje odwołanie
-C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\Main.cpp(126,18): warning C4101: "hitType": lokalna zmienna, do której nie istnieje odwołanie
+C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\Main.cpp(129,18): warning C4101: "hitType": lokalna zmienna, do której nie istnieje odwołanie
   Minecraft.vcxproj -> C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\x64\Debug\Minecraft.exe

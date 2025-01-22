@@ -20,16 +20,20 @@ public:
 	const glm::mat4& GetProjection() const;
 	const glm::mat4& GetLookAt() const;
 
+	const glm::vec3& GetPosition() const { return m_position; }
+	const glm::vec3& GetFront() const { return m_front; }
+
+
 private:
 	void RecreateLootAt();
 
 	glm::mat4 m_projection;
 	glm::mat4 m_lookAt;
-
 	glm::vec3 m_position;
 	glm::vec3 m_up;
 	glm::vec3 m_front;
 	glm::vec3 m_right;
+	
 	float m_yaw;
 	float m_pitch;
 

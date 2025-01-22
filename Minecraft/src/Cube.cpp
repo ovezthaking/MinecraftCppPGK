@@ -82,6 +82,7 @@ Cube::~Cube() {
 	if (m_texture) glDeleteTextures(1, &m_texture);
 	if (m_vbo) glDeleteBuffers(1, &m_vbo);
 	if (m_vao) glDeleteVertexArrays(1, &m_vao);
+
 }
 
 

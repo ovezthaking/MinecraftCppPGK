@@ -5,7 +5,7 @@ AABB::AABB(const glm::vec3& min, const glm::vec3& max)
 	, m_max(max) {
 }
 
-using udword = unsigned int ;
+using udword = unsigned int;
 #define IR(x)	((udword&)x)
 
 Ray::HitType AABB::Hit(const Ray& ray, Ray::time_t minTime, Ray::time_t maxTime, HitRecord& record) const {
@@ -25,7 +25,8 @@ Ray::HitType AABB::Hit(const Ray& ray, Ray::time_t minTime, Ray::time_t maxTime,
 			if (IR(direction[i])) {
 				maxT[i] = (m_min[i] - origin[i]) / direction[i];
 			}
-		} else if(origin[i] > m_max[i]) {
+		}
+		else if (origin[i] > m_max[i]) {
 			coords[i] = m_max[i];
 			inside = false;
 

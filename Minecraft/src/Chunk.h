@@ -146,7 +146,7 @@ inline Ray::HitType Chunk<Depth, Width, Height>::Hit(const Ray& ray, Ray::time_t
                 AABB::HitRecord cubeRecord;
                 if (cubeAABB.Hit(ray, min, closestTime, cubeRecord) == Ray::HitType::Hit) {
                     closestTime = cubeRecord.m_time;
-                    record.m_cubeIndex = glm::ivec3(z, x, y);
+                    record.m_cubeIndex = glm::ivec3(x, y, z);
 
                     glm::ivec3 neighborOffset = glm::ivec3(0);
                     if (cubeRecord.m_axis == AABB::Axis::x) {
@@ -169,16 +169,19 @@ inline Ray::HitType Chunk<Depth, Width, Height>::Hit(const Ray& ray, Ray::time_t
     return hitDetected ? Ray::HitType::Hit : Ray::HitType::Miss;
 }
 
+
 template <uint8_t Depth, uint8_t Width, uint8_t Height>
-inline bool Chunk<Depth, Width, Height>::RemoveBlock(uint8_t width, uint8_t height, uint8_t depth)
-{
+inline bool Chunk<Depth, Width, Height>::RemoveBlock(uint8_t width, uint8_t height, uint8_t depth) {
     size_t index = CoordsToIndex(depth, width, height);
-    if (m_data[index].m_type == Cube::Type::None)
-        return false;
-    m_data[index].m_type = Cube::Type::None;
-    UpdateVisibility();
-    return true;
+    if (m_data[index].m_type == Cube::Type::None) {
+        return false; // Blok ju¿ nie istnieje
+    }
+    m_data[index].m_type = Cube::Type::None; // Ustaw typ na None
+    UpdateVisibility(); // Zaktualizuj widocznoœæa
+    return true; // Blok zosta³ usuniêty
 }
+
+
 
 template <uint8_t Depth, uint8_t Width, uint8_t Height>
 inline bool Chunk<Depth, Width, Height>::PlaceBlock(uint8_t width, uint8_t height, uint8_t depth, Cube::Type type) {

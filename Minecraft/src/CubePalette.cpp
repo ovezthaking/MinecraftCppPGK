@@ -27,7 +27,7 @@ CubePalette::CubePalette()
 const Cube& CubePalette::LookUp(Cube::Type type) const
 {
 	return m_palette.at(type);
-	// TODO: tu wstawi� instrukcj� return
+	
 	
 	
 }
