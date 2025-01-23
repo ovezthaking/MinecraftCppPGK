@@ -11,6 +11,46 @@
 #include <Chunk.h>
 
 
+const char* crosshairVertexShaderSource = R"(
+    #version 330 core
+    layout (location = 0) in vec2 aPos;
+    layout (location = 1) in vec2 aTexCoord;
+
+    out vec2 TexCoord;
+
+    void main() {
+        gl_Position = vec4(aPos, 0.0, 1.0);
+        TexCoord = aTexCoord;
+    }
+)";
+
+const char* crosshairFragmentShaderSource = R"(
+    #version 330 core
+    out vec4 FragColor;
+
+    in vec2 TexCoord;
+
+    uniform sampler2D crosshairTexture;
+
+    void main() {
+        FragColor = texture(crosshairTexture, TexCoord);
+    }
+)";
+
+
+float crosshairVertices[] = {
+    // Positions      // Texture Coords
+    -0.05f, -0.05f,   0.0f, 0.0f, // Left-bottom
+     0.05f, -0.05f,   1.0f, 0.0f, // Right-bottom
+     0.05f,  0.05f,   1.0f, 1.0f, // Right-top
+    -0.05f,  0.05f,   0.0f, 1.0f  // Left-top
+};
+
+unsigned int crosshairIndices[] = {
+    0, 1, 2,
+    2, 3, 0
+};
+
 
 // Linkowanie programu
 GLuint CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint geometryShader = 0)
@@ -93,7 +133,7 @@ int main() {
 
 
 
-    sf::Window window(sf::VideoMode(1000, 800), "OpenGL Chunk", sf::Style::Default, contextSettings);
+    sf::Window window(sf::VideoMode(1000, 800), "Minecraft alpha", sf::Style::Default, contextSettings);
     window.setActive(true);
     window.setMouseCursorGrabbed(true);
     window.setMouseCursorVisible(false);
@@ -103,13 +143,14 @@ int main() {
         std::cerr << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
-
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     // Ustawienia OpenGL
     glViewport(0, 0, static_cast<GLsizei>(window.getSize().x),
         static_cast<GLsizei>(window.getSize().y));
     glEnable(GL_DEPTH_TEST);
 
-    Camera camera(glm::vec3(0.0f, 0.0f, 3.0f), glm::vec3(0.0f, 0.0f, -1.0f),
+    Camera camera(glm::vec3(9.0f, 3.0f, 6.0f), glm::vec3(0.0f, 0.0f, -1.0f),
         -90.0f, 0.0f);
 
     // Tworzenie shaderów
@@ -126,7 +167,7 @@ int main() {
 	Chunk<chunkSize, chunkSize, chunkSize> chunk(glm::vec2(0.0f, 0.0f), palette);
 	chunk.Generate(perlin);
 
-    Ray::HitType hitType;
+    //Ray::HitType hitType;
 	Chunk<chunkSize, chunkSize, chunkSize>::HitRecord hitRecord;
 
    
@@ -153,6 +194,44 @@ int main() {
 
 
     // Pêtla renderuj¹ca
+
+    // Tworzenie tekstury celownika
+    GLuint crosshairTexture = CreateTexture("assets/crosshair/crosshair.png");
+
+    GLuint crosshairVAO, crosshairVBO, crosshairEBO;
+    glGenVertexArrays(1, &crosshairVAO);
+    glGenBuffers(1, &crosshairVBO);
+    glGenBuffers(1, &crosshairEBO);
+
+    glBindVertexArray(crosshairVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, crosshairVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(crosshairVertices), crosshairVertices, GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, crosshairEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(crosshairIndices), crosshairIndices, GL_STATIC_DRAW);
+
+    // Pozycje wierzcho³ków
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+
+    // Wspó³rzêdne tekstur
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+
+
+    GLuint crosshairVertexShader = CreateShader(crosshairVertexShaderSource, GL_VERTEX_SHADER);
+    GLuint crosshairFragmentShader = CreateShader(crosshairFragmentShaderSource, GL_FRAGMENT_SHADER);
+    GLuint crosshairProgram = CreateProgram(crosshairVertexShader, crosshairFragmentShader);
+
+    // Usuñ pojedyncze shadery po stworzeniu programu
+    glDeleteShader(crosshairVertexShader);
+    glDeleteShader(crosshairFragmentShader);
+
+
+
     sf::Clock clock;
     sf::Vector2i windowCenter(window.getSize().x / 2, window.getSize().y / 2);
     sf::Vector2i lastMousePosition = sf::Mouse::getPosition(window);
@@ -171,24 +250,33 @@ int main() {
             else if (event.type == sf::Event::Resized)
                 glViewport(0, 0, event.size.width, event.size.height);
 
-            // Sprawdzenie klikniêcia myszy
-            if (event.type == sf::Event::MouseButtonPressed && !isMousePressed) {
-                isMousePressed = true; // Rejestruj, ¿e przycisk zosta³ wciœniêty
-
+            if (event.type == sf::Event::MouseButtonPressed) {
                 Ray ray(camera.GetPosition(), camera.GetFront());
                 Ray::HitType hitType = chunk.Hit(ray, 0.0f, 3.0f, hitRecord);
-
                 if (hitType == Ray::HitType::Hit) {
-                    if (event.mouseButton.button == sf::Mouse::Left) {
-                        chunk.RemoveBlock(hitRecord.m_cubeIndex.x,
-                            hitRecord.m_cubeIndex.y,
-                            hitRecord.m_cubeIndex.z);
-                    }
-                    else if (event.mouseButton.button == sf::Mouse::Right) {
-                        chunk.PlaceBlock(hitRecord.m_neighbourIndex.x,
-                            hitRecord.m_neighbourIndex.y,
-                            hitRecord.m_neighbourIndex.z,
-                            Cube::Type::Grass);
+                    std::cout << "Hit block at: (" << hitRecord.m_cubeIndex.x << ", "
+                        << hitRecord.m_cubeIndex.y << ", "
+                        << hitRecord.m_cubeIndex.z << ")" << std::endl;
+                    // Sprawdzenie klikniêcia myszy
+                    if (event.type == sf::Event::MouseButtonPressed && !isMousePressed) {
+                        isMousePressed = true; // Rejestruj, ¿e przycisk zosta³ wciœniêty
+
+                        Ray ray(camera.GetPosition(), camera.GetFront());
+                        Ray::HitType hitType = chunk.Hit(ray, 0.0f, 3.0f, hitRecord);
+
+                        if (hitType == Ray::HitType::Hit) {
+                            if (event.mouseButton.button == sf::Mouse::Left) {
+                                chunk.RemoveBlock(hitRecord.m_cubeIndex.x,
+                                    hitRecord.m_cubeIndex.y,
+                                    hitRecord.m_cubeIndex.z);
+                            }
+                            else if (event.mouseButton.button == sf::Mouse::Right) {
+                                chunk.PlaceBlock(hitRecord.m_neighbourIndex.x,
+                                    hitRecord.m_neighbourIndex.y,
+                                    hitRecord.m_neighbourIndex.z,
+                                    Cube::Type::Grass);
+                            }
+                        }
                     }
                 }
             }
@@ -236,6 +324,20 @@ int main() {
         //cube.Draw();
 		chunk.Draw(shaders);
 
+
+        // Renderowanie celownika
+        glUseProgram(crosshairProgram); // U¿ycie shaderów celownika
+        glBindVertexArray(crosshairVAO);
+        glBindTexture(GL_TEXTURE_2D, crosshairTexture);
+
+        // Wy³¹cz test g³êbokoœci, aby celownik zawsze by³ widoczny
+        glDisable(GL_DEPTH_TEST);
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glEnable(GL_DEPTH_TEST); // Przywrócenie testu g³êbokoœci
+		 // Wy³¹czenie programu celownika
+        glUseProgram(shaders.GetProgramId());
+        shaders.setUniform("view", camera.View());
+        shaders.setUniform("projection", camera.Projection());
 
         // Wyœwietlanie okna
         window.display();

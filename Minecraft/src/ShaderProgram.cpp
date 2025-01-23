@@ -70,6 +70,11 @@ ShaderProgram::ShaderProgram(ShaderProgram&& rhs) noexcept
 	: m_programId(std::exchange(rhs.m_programId, 0)) {
 }
 
+GLuint ShaderProgram::GetProgramId() const {
+    return ShaderProgram::m_programId;
+}
+
+
 ShaderProgram& ShaderProgram::operator=(ShaderProgram&& rhs) noexcept {
 	if (&rhs == this) {
 		return *this;
@@ -132,3 +137,8 @@ void ShaderProgram::setUniform(const std::string& name,
             << std::endl;
     }
 }
+
+/*
+GLuint ShaderProgram::GetProgramId() const {
+    return ShaderProgram::m_programId;
+}*/

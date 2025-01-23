@@ -12,6 +12,7 @@ public:
 	ShaderProgram(const ShaderProgram&) = delete;
 	ShaderProgram& operator=(const ShaderProgram&) = delete;
 	ShaderProgram(ShaderProgram&& rhs) noexcept;
+	GLuint GetProgramId() const;
 	ShaderProgram& operator=(ShaderProgram&& rhs) noexcept;
 	~ShaderProgram();
 
