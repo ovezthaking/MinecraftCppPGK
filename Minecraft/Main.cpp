@@ -9,6 +9,7 @@
 #include <Camera.h>
 #include <CubePalette.h>
 #include <Chunk.h>
+#include <ChunkManager.cpp>
 
 
 const char* crosshairVertexShaderSource = R"(
@@ -239,6 +240,9 @@ int main() {
 	
     bool isMousePressed = false; // Zmienna stanu klikniêcia
 
+    
+    ChunkManager chunkManager(palette, perlin);
+
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
 
@@ -323,7 +327,8 @@ int main() {
         // Renderowanie szeœcianu
         //cube.Draw();
 		chunk.Draw(shaders);
-
+        chunkManager.Update(camera.GetPosition());
+		chunkManager.Draw(shaders);
 
         // Renderowanie celownika
         glUseProgram(crosshairProgram); // U¿ycie shaderów celownika
