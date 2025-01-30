@@ -11,16 +11,16 @@
 #include <Chunk.h>
 #include <random>
 #include <memory>
-#include <functional> // Dla std::hash
+#include <functional> 
 
-// Własna struktura hashująca dla glm::ivec2
+
 namespace std {
     template <>
     struct hash<glm::ivec2> {
         size_t operator()(const glm::ivec2& v) const noexcept {
             size_t h1 = std::hash<int>()(v.x);
             size_t h2 = std::hash<int>()(v.y);
-            return h1 ^ (h2 * 0x9e3779b9 + (h1 << 6) + (h1 >> 2)); // Lepsze mieszanie wartości
+            return h1 ^ (h2 * 0x9e3779b9 + (h1 << 6) + (h1 >> 2)); 
         }
     };
 }
@@ -31,25 +31,6 @@ const int renderDistance = 4;
 std::unordered_map<glm::ivec2, std::unique_ptr<Chunk<chunkSize, chunkSize, chunkSize>>> chunks;
 
 
-
-/*
-void generateChunksAroundPlayer(const glm::vec3& playerPosition, CubePalette& palette, PerlinNoise& perlin) {
-    int playerChunkX = static_cast<int>(playerPosition.x) / chunkSize;
-    int playerChunkZ = static_cast<int>(playerPosition.z) / chunkSize;
-
-    for (int x = playerChunkX - renderDistance; x <= playerChunkX + renderDistance; ++x) {
-        for (int z = playerChunkZ - renderDistance; z <= playerChunkZ + renderDistance; ++z) {
-            ChunkCoord coord = { x, z };
-
-            if (chunks.find(coord) == chunks.end()) {
-                glm::vec2 position(x * chunkSize, z * chunkSize);
-                chunks.emplace(coord, Chunk<chunkSize, chunkSize, chunkSize>(position, palette));
-                chunks.at(coord).Generate(perlin);
-            }
-        }
-    }
-}
-*/
 void UpdateChunks(const glm::vec3& playerPosition, CubePalette& palette, const PerlinNoise& perlin) {
     glm::ivec2 playerChunk = glm::ivec2(static_cast<int>(std::floor(playerPosition.x / chunkSize)),
         static_cast<int>(std::floor(playerPosition.z / chunkSize)));
@@ -68,9 +49,9 @@ void UpdateChunks(const glm::vec3& playerPosition, CubePalette& palette, const P
             }
             else {
                 // Tworzymy nowy wskaźnik do chunku
-				//std::cout << playerChunk.x << " " << playerChunk.y << std::endl;
-                std::cout << "Player chunk: " << playerChunk.x << ", " << playerChunk.y << std::endl;
-                std::cout << "Generating chunk at: " << chunkPos.x << ", " << chunkPos.y << std::endl;
+				
+                //std::cout << "Player chunk: " << playerChunk.x << ", " << playerChunk.y << std::endl;
+                //std::cout << "Generating chunk at: " << chunkPos.x << ", " << chunkPos.y << std::endl;
                 auto chunk = std::make_unique<Chunk<chunkSize, chunkSize, chunkSize>>(
                     glm::ivec2(chunkPos.x * chunkSize, chunkPos.y * chunkSize), palette);
                 chunk->Generate(perlin);
