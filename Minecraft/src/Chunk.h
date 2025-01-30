@@ -236,3 +236,4 @@ inline void Chunk<Depth, Width, Height>::UpdateBlockVisibility(size_t depth, siz
 
     updateNeighbor(depth, width, height);
 }
+

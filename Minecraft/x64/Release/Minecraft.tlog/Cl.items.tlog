@@ -1,1 +1,10 @@
 C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\Main.cpp;C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\x64\Release\Main.obj
+C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\src\AABB.cpp;C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\x64\Release\AABB.obj
+C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\src\Camera.cpp;C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\x64\Release\Camera.obj
+C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\src\Cube.cpp;C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\x64\Release\Cube.obj
+C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\src\CubePalette.cpp;C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\x64\Release\CubePalette.obj
+C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\src\glad.c;C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\x64\Release\glad.obj
+C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\src\PerlinNoise.cpp;C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\x64\Release\PerlinNoise.obj
+C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\src\Ray.cpp;C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\x64\Release\Ray.obj
+C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\src\ShaderProgram.cpp;C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\x64\Release\ShaderProgram.obj
+C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\test.cpp;C:\Users\OliwerUrbaniak\.ssh\MinecraftCppPGK\Minecraft\x64\Release\test.obj

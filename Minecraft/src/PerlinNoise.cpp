@@ -37,10 +37,10 @@ PerlinNoise::PerlinNoise() {
 	std::copy(s_permutations.begin(), s_permutations.end(), m_permutations.begin() + 256);
 }
 
-PerlinNoise::PerlinNoise(float seed) {
-	std::iota(m_permutations.begin(), m_permutations.end(), 0);
-	std::shuffle(m_permutations.begin(), m_permutations.end(), std::default_random_engine(static_cast<std::uint32_t>(seed)));
-	std::copy(m_permutations.begin(), m_permutations.end(), m_permutations.begin() + 256);
+PerlinNoise::PerlinNoise(int seed) {
+	std::iota(m_permutations.begin(), m_permutations.begin() + 256, 0);
+	std::shuffle(m_permutations.begin(), m_permutations.begin() + 256, std::default_random_engine(seed));
+	std::copy(m_permutations.begin(), m_permutations.begin() + 256, m_permutations.begin() + 256);
 
 }
 

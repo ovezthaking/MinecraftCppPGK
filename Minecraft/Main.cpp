@@ -1,4 +1,4 @@
-#include <SFML/Graphics.hpp>
+ï»¿#include <SFML/Graphics.hpp>
 #include <GLAD/glad.h>
 #include <iostream>
 #include <glm/glm.hpp>
@@ -9,7 +9,89 @@
 #include <Camera.h>
 #include <CubePalette.h>
 #include <Chunk.h>
-#include <ChunkManager.cpp>
+#include <random>
+#include <memory>
+#include <functional> // Dla std::hash
+
+// WÅ‚asna struktura hashujÄ…ca dla glm::ivec2
+namespace std {
+    template <>
+    struct hash<glm::ivec2> {
+        size_t operator()(const glm::ivec2& v) const noexcept {
+            size_t h1 = std::hash<int>()(v.x);
+            size_t h2 = std::hash<int>()(v.y);
+            return h1 ^ (h2 * 0x9e3779b9 + (h1 << 6) + (h1 >> 2)); // Lepsze mieszanie wartoÅ›ci
+        }
+    };
+}
+
+const size_t chunkSize = 16;
+const int renderDistance = 4; 
+
+std::unordered_map<glm::ivec2, std::unique_ptr<Chunk<chunkSize, chunkSize, chunkSize>>> chunks;
+
+
+
+/*
+void generateChunksAroundPlayer(const glm::vec3& playerPosition, CubePalette& palette, PerlinNoise& perlin) {
+    int playerChunkX = static_cast<int>(playerPosition.x) / chunkSize;
+    int playerChunkZ = static_cast<int>(playerPosition.z) / chunkSize;
+
+    for (int x = playerChunkX - renderDistance; x <= playerChunkX + renderDistance; ++x) {
+        for (int z = playerChunkZ - renderDistance; z <= playerChunkZ + renderDistance; ++z) {
+            ChunkCoord coord = { x, z };
+
+            if (chunks.find(coord) == chunks.end()) {
+                glm::vec2 position(x * chunkSize, z * chunkSize);
+                chunks.emplace(coord, Chunk<chunkSize, chunkSize, chunkSize>(position, palette));
+                chunks.at(coord).Generate(perlin);
+            }
+        }
+    }
+}
+*/
+void UpdateChunks(const glm::vec3& playerPosition, CubePalette& palette, const PerlinNoise& perlin) {
+    glm::ivec2 playerChunk = glm::ivec2(static_cast<int>(std::floor(playerPosition.x / chunkSize)),
+        static_cast<int>(std::floor(playerPosition.z / chunkSize)));
+    int playerChunkX = static_cast<int>(playerPosition.x) / chunkSize;
+    int playerChunkZ = static_cast<int>(playerPosition.z) / chunkSize;
+    
+    std::unordered_map<glm::ivec2, std::unique_ptr<Chunk<chunkSize, chunkSize, chunkSize>>> newChunks;
+
+    for (int dx = playerChunkX-renderDistance; dx <= playerChunkX + renderDistance; ++dx) {
+        for (int dz = playerChunkZ - renderDistance; dz <= playerChunkZ + renderDistance; ++dz) {
+            glm::ivec2 chunkPos = glm::ivec2(dx, dz);
+
+            if (chunks.find(chunkPos) != chunks.end()) {
+                // UÅ¼ywamy std::move(), aby przenieÅ›Ä‡ wskaÅºnik na chunk do nowej mapy
+                newChunks[chunkPos] = std::move(chunks[chunkPos]);
+            }
+            else {
+                // Tworzymy nowy wskaÅºnik do chunku
+				//std::cout << playerChunk.x << " " << playerChunk.y << std::endl;
+                std::cout << "Player chunk: " << playerChunk.x << ", " << playerChunk.y << std::endl;
+                std::cout << "Generating chunk at: " << chunkPos.x << ", " << chunkPos.y << std::endl;
+                auto chunk = std::make_unique<Chunk<chunkSize, chunkSize, chunkSize>>(
+                    glm::ivec2(chunkPos.x * chunkSize, chunkPos.y * chunkSize), palette);
+                chunk->Generate(perlin);
+                newChunks.emplace(chunkPos, std::move(chunk));
+            }
+        }
+    }
+    // ZastÄ™pujemy starÄ… mapÄ™ nowÄ…, usuwajÄ…c niepotrzebne chunki
+    chunks.clear();  // Usuwamy stare chunki
+    for (auto& [pos, chunk] : newChunks) {
+        //std::cout << "Existing chunk at: " << pos.x << ", " << pos.y << std::endl;
+        chunks[pos] = std::move(chunk);  
+    }
+}
+
+void DrawChunks(ShaderProgram& shader) {
+    for (auto& [pos, chunk] : chunks) {
+        chunk->Draw(shader);  
+    }
+}
+
 
 
 const char* crosshairVertexShaderSource = R"(
@@ -71,7 +153,7 @@ GLuint CreateProgram(GLuint vertexShader, GLuint fragmentShader, GLuint geometry
     return programId;
 }
 
-// Kompilacja shaderów
+// Kompilacja shaderÃ³w
 GLuint CreateShader(const GLchar* shaderSource, GLenum shaderType) {
     const GLuint shaderId = glCreateShader(shaderType);
     if (!shaderId) {
@@ -127,7 +209,7 @@ int main() {
 
     sf::ContextSettings contextSettings;
     contextSettings.depthBits = 24;
-	contextSettings.stencilBits = 8;
+    contextSettings.stencilBits = 8;
     contextSettings.majorVersion = 3;
     contextSettings.minorVersion = 3;
 
@@ -154,24 +236,28 @@ int main() {
     Camera camera(glm::vec3(9.0f, 3.0f, 6.0f), glm::vec3(0.0f, 0.0f, -1.0f),
         -90.0f, 0.0f);
 
-    // Tworzenie shaderów
+    // Tworzenie shaderÃ³w
     ShaderProgram shaders;
+
+
+
+    shaders.Use();
+
+    CubePalette palette;
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(10000, 99999);
+    int random_number = dis(gen);
+    std::cout << random_number << "\n";
+    PerlinNoise perlin(static_cast<int>(random_number));
+
     
-
-
-	shaders.Use();
-    
-	CubePalette palette;
-	PerlinNoise perlin;
-
-	const size_t chunkSize = 16;
-	Chunk<chunkSize, chunkSize, chunkSize> chunk(glm::vec2(0.0f, 0.0f), palette);
-	chunk.Generate(perlin);
 
     //Ray::HitType hitType;
-	Chunk<chunkSize, chunkSize, chunkSize>::HitRecord hitRecord;
+    Chunk<chunkSize, chunkSize, chunkSize>::HitRecord hitRecord;
 
-   
+
 
 
     // Tworzenie kamery
@@ -183,9 +269,9 @@ int main() {
 
     /*
     // Tworzenie tekstury    // Ustawienie tekstury
-	GLuint grassTexture = CreateTexture("assets/blocks/grass_debug.jpg");
+    GLuint grassTexture = CreateTexture("assets/blocks/grass_debug.jpg");
     glBindTexture(GL_TEXTURE_2D, grassTexture);
-    
+
 
 
     // Tworzenie obiektu Cube
@@ -194,7 +280,7 @@ int main() {
 
 
 
-    // Pêtla renderuj¹ca
+    // PÄ™tla renderujÄ…ca
 
     // Tworzenie tekstury celownika
     GLuint crosshairTexture = CreateTexture("assets/crosshair/crosshair.png");
@@ -212,11 +298,11 @@ int main() {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, crosshairEBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(crosshairIndices), crosshairIndices, GL_STATIC_DRAW);
 
-    // Pozycje wierzcho³ków
+    // Pozycje wierzchoÅ‚kÃ³w
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    // Wspó³rzêdne tekstur
+    // WspÃ³Å‚rzÄ™dne tekstur
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
@@ -227,7 +313,7 @@ int main() {
     GLuint crosshairFragmentShader = CreateShader(crosshairFragmentShaderSource, GL_FRAGMENT_SHADER);
     GLuint crosshairProgram = CreateProgram(crosshairVertexShader, crosshairFragmentShader);
 
-    // Usuñ pojedyncze shadery po stworzeniu programu
+    // UsuÅ„ pojedyncze shadery po stworzeniu programu
     glDeleteShader(crosshairVertexShader);
     glDeleteShader(crosshairFragmentShader);
 
@@ -237,16 +323,16 @@ int main() {
     sf::Vector2i windowCenter(window.getSize().x / 2, window.getSize().y / 2);
     sf::Vector2i lastMousePosition = sf::Mouse::getPosition(window);
 
-	
-    bool isMousePressed = false; // Zmienna stanu klikniêcia
+
+    bool isMousePressed = false; // Zmienna stanu klikniÄ™cia
+
 
     
-    ChunkManager chunkManager(palette, perlin);
 
     while (window.isOpen()) {
         float dt = clock.restart().asSeconds();
 
-        // Obs³uga zdarzeñ
+        // ObsÅ‚uga zdarzeÅ„
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
@@ -256,14 +342,38 @@ int main() {
 
             if (event.type == sf::Event::MouseButtonPressed) {
                 Ray ray(camera.GetPosition(), camera.GetFront());
-                Ray::HitType hitType = chunk.Hit(ray, 0.0f, 3.0f, hitRecord);
+                for (auto& [pos, chunk] : chunks) {
+                    Ray::HitType hitType = chunk->Hit(ray, 0.0f, 3.0f, hitRecord);  // âœ… UÅ¼ywamy -> zamiast .  
+                    if (hitType == Ray::HitType::Hit) {
+                        std::cout << "Hit block at: (" << hitRecord.m_cubeIndex.x << ", "
+                            << hitRecord.m_cubeIndex.y << ", "
+                            << hitRecord.m_cubeIndex.z << ")" << std::endl;
+
+                        if (event.type == sf::Event::MouseButtonPressed && !isMousePressed) {
+                            isMousePressed = true; // Rejestruj klikniÄ™cie myszy  
+
+                            if (event.mouseButton.button == sf::Mouse::Left) {
+                                chunk->RemoveBlock(hitRecord.m_cubeIndex.x,
+                                    hitRecord.m_cubeIndex.y,
+                                    hitRecord.m_cubeIndex.z);
+                            }
+                            else if (event.mouseButton.button == sf::Mouse::Right) {
+                                chunk->PlaceBlock(hitRecord.m_neighbourIndex.x,
+                                    hitRecord.m_neighbourIndex.y,
+                                    hitRecord.m_neighbourIndex.z,
+                                    Cube::Type::Grass);
+                            }
+                        }
+                    }
+                }
+                /*Ray::HitType hitType = chunk.Hit(ray, 0.0f, 3.0f, hitRecord);
                 if (hitType == Ray::HitType::Hit) {
                     std::cout << "Hit block at: (" << hitRecord.m_cubeIndex.x << ", "
                         << hitRecord.m_cubeIndex.y << ", "
                         << hitRecord.m_cubeIndex.z << ")" << std::endl;
-                    // Sprawdzenie klikniêcia myszy
+                    // Sprawdzenie klikniÄ™cia myszy
                     if (event.type == sf::Event::MouseButtonPressed && !isMousePressed) {
-                        isMousePressed = true; // Rejestruj, ¿e przycisk zosta³ wciœniêty
+                        isMousePressed = true; // Rejestruj, Å¼e przycisk zostaÅ‚ wciÅ›niÄ™ty
 
                         Ray ray(camera.GetPosition(), camera.GetFront());
                         Ray::HitType hitType = chunk.Hit(ray, 0.0f, 3.0f, hitRecord);
@@ -282,19 +392,19 @@ int main() {
                             }
                         }
                     }
-                }
+                }*/
             }
 
             if (event.type == sf::Event::MouseButtonReleased) {
-                isMousePressed = false; // Przywrócenie stanu klikniêcia
+                isMousePressed = false; // PrzywrÃ³cenie stanu klikniÄ™cia
             }
         }
 
 
 
 
-		float movementSpeed = 0.025f;
-        // Obs³uga klawiatury
+        float movementSpeed = 0.1f;
+        // ObsÅ‚uga klawiatury
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) camera.MoveForward(dt + movementSpeed);
         if ((sf::Keyboard::isKeyPressed(sf::Keyboard::W)) && (sf::Keyboard::isKeyPressed(sf::Keyboard::LControl))) camera.MoveForward(dt + movementSpeed);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) camera.MoveBackward(dt + movementSpeed);
@@ -302,52 +412,54 @@ int main() {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) camera.MoveRight(dt + movementSpeed);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) camera.MoveUp(dt + movementSpeed);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) camera.MoveDown(dt + movementSpeed);
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) window.close(); //Escape do zamkniêcia
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) window.close(); //Escape do zamkniÄ™cia
         //if (sf::Mouse::isButtonPressed(sf::Mouse::Left));
-        
 
-        // Obs³uga myszy
+
+        // ObsÅ‚uga myszy
         sf::Vector2i mousePosition = sf::Mouse::getPosition(window);
         sf::Vector2i mouseDelta = mousePosition - lastMousePosition;
         camera.Rotate(mouseDelta);
         lastMousePosition = mousePosition;
-
+        UpdateChunks(camera.GetPosition(), palette, perlin);
         // Czyszczenie ekranu
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Ustawienie shaderów i macierzy
-        
+        // Ustawienie shaderÃ³w i macierzy
+
 
         shaders.setUniform("view", camera.View());
         shaders.setUniform("projection", camera.Projection());
 
         glDrawArrays(GL_LINES, 0, 2);
 
-        // Renderowanie szeœcianu
+        // Renderowanie szeÅ›cianu
         //cube.Draw();
-		chunk.Draw(shaders);
-        chunkManager.Update(camera.GetPosition());
-		chunkManager.Draw(shaders);
+        //chunk.Draw(shaders);
+
+        
+        DrawChunks(shaders);
+       /* for (auto& chunk : chunks) {
+            chunk.Draw(shaders);
+        }*/
 
         // Renderowanie celownika
-        glUseProgram(crosshairProgram); // U¿ycie shaderów celownika
+        glUseProgram(crosshairProgram); // UÅ¼ycie shaderÃ³w celownika
         glBindVertexArray(crosshairVAO);
         glBindTexture(GL_TEXTURE_2D, crosshairTexture);
 
-        // Wy³¹cz test g³êbokoœci, aby celownik zawsze by³ widoczny
+        // WyÅ‚Ä…cz test gÅ‚Ä™bokoÅ›ci, aby celownik zawsze byÅ‚ widoczny
         glDisable(GL_DEPTH_TEST);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-        glEnable(GL_DEPTH_TEST); // Przywrócenie testu g³êbokoœci
-		 // Wy³¹czenie programu celownika
+        glEnable(GL_DEPTH_TEST); // PrzywrÃ³cenie testu gÅ‚Ä™bokoÅ›ci
+        // WyÅ‚Ä…czenie programu celownika
         glUseProgram(shaders.GetProgramId());
         shaders.setUniform("view", camera.View());
         shaders.setUniform("projection", camera.Projection());
 
-        // Wyœwietlanie okna
+        // WyÅ›wietlanie okna
         window.display();
     }
-
     return 0;
 }
-
