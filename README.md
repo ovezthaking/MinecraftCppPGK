@@ -21,7 +21,7 @@ This project is a simple Minecraft-like game built using C++, SFML, and OpenGL. 
 - <b>Perlin Noise:</b> Generates procedural terrain.
 <br><br>
 <b>How to Build & Run</b><br>
-<b>Prerequisites<b><br>
+<b>Prerequisites</b><br>
 - C++17 or later
 - GLAD
 - OpenGL 3.3+
