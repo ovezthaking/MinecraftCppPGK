@@ -32,7 +32,8 @@ This project is a simple Minecraft-like game built using C++, SFML, and OpenGL. 
   2. Compile the project using your preferred method (e.g., CMake or manual compilation). (or just use Visual Studio 2022)
   3. Run the executable.
   <br><br>
-<b>Controls</b><br>
+  
+  <b>Controls</b><br>
 - <b>WASD</b> - Move forward, backward, left, and right.
 - <b>Mouse Movement</b> - Look around.
 - <b>Left Click</b> - Remove a block.
