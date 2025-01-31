@@ -20,13 +20,13 @@ This project is a simple Minecraft-like game built using C++, SFML, and OpenGL. 
 - <b>GLM:</b> Used for vector and matrix math operations.
 - <b>Perlin Noise:</b> Generates procedural terrain.
 <br><br>
-<b>How to Build & Run</b><br>
+<b>How to Build & Run</b><br><br>
 <b>Prerequisites</b><br>
 - C++17 or later
 - GLAD
 - OpenGL 3.3+
 - CMake (optional, for easier compilation)
-  <br>
+  <br><br>
   <b>Building</b> <br>
   1. Clone the repository
   2. Compile the project using your preferred method (e.g., CMake or manual compilation). (or just use Visual Studio 2022)
