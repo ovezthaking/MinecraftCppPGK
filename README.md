@@ -1,7 +1,5 @@
 # MinecraftCppPGK
-Minecraft project in cpp
-
-![image](https://github.com/user-attachments/assets/868cd3ad-cf97-4175-b192-4bdb853620e5)
+Minecraft project in cpp <br><br>
 
 <b> Overview </b> <br>
 This project is a simple Minecraft-like game built using C++, SFML, and OpenGL. It features a procedurally generated voxel world, dynamic chunk management, and basic player interactions such as block placement and removal.
@@ -50,3 +48,4 @@ This project is a simple Minecraft-like game built using C++, SFML, and OpenGL. 
 <br><br>
 <b>License</b><br>
 This project is open-source and available under the MIT License.
+![image](https://github.com/user-attachments/assets/868cd3ad-cf97-4175-b192-4bdb853620e5)
