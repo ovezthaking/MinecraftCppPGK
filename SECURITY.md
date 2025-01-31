@@ -14,7 +14,7 @@ The following table outlines which versions of the project receive security upda
 If you discover a security vulnerability, please follow these steps:
 
 1. **Report Confidentially**  
-   Submit your report via [GitHub Security Advisories](https://github.com/MinecraftCppPGK/security/advisories) or email us at `kontaktovez@gmail.com`.
+   Submit your report via [GitHub Security Advisories](https://github.com/ovezthaking/MinecraftCppPGK/security/advisories) or email us at `kontaktovez@gmail.com`.
 
 2. **Response Time**  
    - We aim to acknowledge new reports within **48 hours**.  
