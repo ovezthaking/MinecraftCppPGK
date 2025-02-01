@@ -31,8 +31,8 @@ This project is a simple Minecraft-like game built using C++, SFML, and OpenGL. 
 ### Building
 1. Clone the repository:
    ```sh
-   git clone https://github.com/your-username/minecraft-clone-cpp.git
-   cd minecraft-clone-cpp
+   git clone https://github.com/ovezthaking/MinecraftCppPGK.git
+   cd MinecraftCppPGK
    ```
 2. Compile the project using your preferred method (e.g., CMake or manual compilation).
 3. Run the executable.
