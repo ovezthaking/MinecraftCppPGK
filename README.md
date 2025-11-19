@@ -1,5 +1,5 @@
 # MinecraftCppPGK
-Minecraft project in cpp - to run a project, first unzip the 'include & lib.zip' file<br><br>
+Minecraft project in cpp - to run a project, first unzip the 'unzip first.zip' file in 'Minecraft' directory (should appear next to 'src', 'assets', etc. folders)<br><br>
 
 # Minecraft Clone in C++ with SFML and OpenGL
 
