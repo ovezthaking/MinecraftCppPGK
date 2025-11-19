@@ -1,5 +1,5 @@
 # MinecraftCppPGK
-Minecraft project in cpp <br><br>
+Minecraft project in cpp - to run a project, first unzip the 'include & lib.zip' file<br><br>
 
 # Minecraft Clone in C++ with SFML and OpenGL
 
